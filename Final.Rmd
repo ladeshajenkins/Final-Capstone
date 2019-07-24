@@ -1,0 +1,296 @@
+---
+---
+title: "Capstone"
+author: "Ladesha Jenkins"
+date: "7/23/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r}
+
+```
+
+Introduction
+Children learn, adapt, and take on behaviors that are taught from the many influences that he/she may encounter. The number of influences that a person has is not limited to the family members in one’s house hold. A child’s many influence can include, but are not limited to, immediate family, friends, school, neighbors, celebrities, and the biggest of all the media. The media would be considered as all forms of communication outlets like the internet, social media, news media, print media, and in specific to this project video viewing and electronic games. The media can offer good and bad influences for all viewers watching it. It is a parent’s duty to protect the child from negative influences as much as possible to ensure healthy growth and implement good behavior.
+	The media can introduce children to early exposure of media violence. Early exposure to media violence is a contributing factor to the development of aggression. The aggression then could lead to aggressive and violent behavior in children. Children are increasingly becoming heavy media consumers. Research indicates that much of the media directed at children contains violent content. Early exposure to media violence could place both male and female children at risk for the development of aggressive and violent behavior in adulthood. Children that watch shows that have violence that is realistic, consistently repeated and unpunished, are more likely to imitate what they see. Children with emotional, behavioral, learning or impulse control problems may be more easily influenced by video aggressiveness. The impact of TV violence may show immediately in the child's behavior or may surface years later. Due to the media presenting violence at a very high level, scientist have found ways parents can protect children from excessive media violence.   Each day there are multiple things and people that a child would observe where behaviors can be learned from. These multiple things would be considered as the factors of independent variables that affect behavior in children. In this project, the factors that are tested that affect behavior in children are electronics, siblings (older and younger), parental approach, and nutrition. These factors tend to be the major affects in children because these typically are things and people that the child would encounter every day. The examples set by adults, older siblings and children are the most powerful influences shaping a child's behavior and personality. Electronics a nutrition would be the next major influences on children behavior because electronic offer exposure to all types of human behavior from the negative to positive behavior. The elements or ingredients of a child's diet like thiamin treatment reverses aggressiveness in thiamin-deficient children, and sucrose and additives are suspected to induce hyperactivity.
+  
+  Of all types of behavior a child can display, the focus of the project would be on aggressive behavior. The level of aggressiveness would be determined according to the different circumstances of the household that the child lives in. it is know that all people's circumstances are different or have their own uniqueness. At a general level, realistic scenarios or cases that are close to what a child's family can fit in are projected according to the different levels of the project. Being that children would be the main focus, parents would be the audience of this project. 
+The goal of the project would be to predict the level of aggression with these given levels according to each factor or independent variable. The variables are lised below:
+
+
+Dependent Variable: 
+Aggression - aggression level seen in behavior
+
+Independent Variables:
+Videos - the amount of time spent viewing videos
+Electronic Games - the amount of time spent playing electronic games
+Siblings - amount of aggression seen in older siblings
+Nutrition - detremined healthy or unhealthy diet
+Parental Approach - how the parents implement parenting skills effectively
+
+
+ 
+The necessary libraries needed for the project has been installed and are loaded here.
+
+```{r, warning=FALSE, message=FALSE}
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(MatchIt)
+#library(ggplot2)
+#library(caret)
+#library(RCurl) #To read the csv file from GitHub directly
+library(rmarkdown)
+```
+
+All of the packages are loaded.  Therefore, we load the data into R and call the data frame dta.
+
+
+```{r}
+dta <- read.csv("CAclean.csv")
+```
+
+
+An extra variable was included in the data frame after the data was read.  Thus, the variable was removed.
+```{r}
+dta<-select(dta, -c(X))
+```
+
+Data Wrangligling
+
+The data set was provided in a nearly cleaned manner.  However, multiple data wrangling techniques were performed on the data frame to transom it into a document that can be analyzed.  These techniques include removing unnecessary variables, changing the names of some columns, adding variables, and including functions for calculation. 
+
+Changing Columns Names:  There are six variables included in the data frame, and all variables underwent a name change.  When the data was imported into R Studio, some variables names were too long, and others did not accurately describe the particular data.  Therefore, the names of the variables were changed to shorter, concise names that accurately describe the data in the column. AggUk was changed to Aggression. VideoUK was changed to Videos. ElectUK was changed to Electronig games. SibUK was changed to Siblings. NutUK was changed to Nutrition. ParUK was changed to Parental Approach. The names of the columns had to become broader to fit the data of both the United States and the United Kingdom. 
+
+Adding Variables and Data:Two variables were necessary for building the model.  A factor column and a numerical column that UK or US for each child. The numeric values will allow the United States and the United Kingdom to be compared for the charts and graphs. The United States was given the value of zero, while the United Kingdom was given the value of one.   
+
+
+
+
+Exploratory Data Analysis
+Now that the data have been ingested it is time to begin the exploration.  The first thing to do is to have a quick look at our data.  For that, the `str()` function and the more human-readable (and intuitive), `glimpse()` function. is used.
+
+```{r}
+glimpse(dta)
+```
+
+
+As expected, there are 667 rows with 8 variables inside of the data set.  Additionally, the type of variables is apparent from this view.  For example, UK.US` is a factor variable.   A factor, instead of a number seems more logical in this case.  Necessary changes will be made to the variable if the exploratory analysis dictates.  For now, we proceed with the intended analysis.  Now let's take a look of the structure of the data set to see what additional information is available.  
+```{r}
+str(dta)
+```
+
+Evaluating the output for each code, it is easy to determine that the codes provide almost identical information.  
+
+
+```{r}
+library(tidyverse)
+dta %>% group_by(Aggression) %>% count() %>% arrange(desc(n))
+```
+
+
+The aggression level with the largest amount seen in children was 0.040.  This number shows that there is some level of aggression in the child.
+
+
+```{r}
+agg_count <- dta %>% group_by(Aggression) %>% count() %>% filter(n > 5)
+agg_count
+```
+
+
+ A comparison among aggression in the two countries will provide pertinent information. The results will be displayed as a bar graph. 
+
+```{r}
+ggplot(dta %>% filter(Aggression %in% unique(agg_count$Aggression)),
+       aes(x = UK_US, fill = Aggression)) + geom_bar(position = 'dodge')
+```
+
+
+
+Shifting the focus to the countries, the number of children used in each country is tested. 
+
+```{r}
+dta %>% group_by(UK_US) %>% count() %>%  arrange(desc(n))
+```
+
+What are the overall aggression levels in each country?  How many children from each country are at each aggresion level?  
+
+```{r}
+UKUS_agg <- dta %>% group_by(UK_US, Aggression) %>% count() %>% arrange(desc(n))
+UKUS_agg
+```
+
+
+United Kingdom has more children being used, and it was noticed that for the largest 
+
+
+```{r}
+ggplot(UKUS_agg %>% filter(Aggression %in% unique(agg_count$Aggression)) , aes(x = UK_US, y = n, fill = Aggression)) + geom_bar(stat = 'identity') +
+  coord_flip()
+```
+
+
+It shows a heat map by country and the total number of children in each aggression level.    
+
+Shoveling deeper into extracting the truth from the data, consider the parental approach variable.
+
+```{r}
+ggplot(CAclean, aes(x = Aggression, y = Electronic_games, color = UK.US )) + geom_jitter()
+
+ggplot(CAclean, aes(x = Aggression, y = Videos, color = UK.US )) + geom_jitter()
+
+ggplot(CAclean, aes(x = Aggression, y = Siblings, color = UK.US )) + geom_jitter()
+
+ggplot(CAclean, aes(x = Aggression, y = Nutrition, color = UK.US )) + geom_jitter()
+
+ggplot(CAclean, aes(x = Aggression, y = Parental_Approach, color = UK.US )) + geom_jitter()
+```
+
+In the first scatter plot, electronic games was compared to aggression, and it has a positive linear association between the two variables. In the second scatter plot, videos was compared to aggression, and it has a positive linear association between the two models. In the third scatter plot, siblings was compared to aggression, and it has a positive linear association between the two variables. The third scatter plot seems to have the highest positive linear slope due to the points on the scatter plot spreading from one side of the graph to the other. Also, it doesn’t have as many points focused or centered in the middle of the plot. In the fourth scatter plot, nutrition was compared to aggression, and it is hard to decipher whether or not it has a negative or positive linear association or no association between the two variables. If the scatter plot included a linear slope, it could possibly be a negative slope. In the final scatter plot, parental approach was compared to aggression, and it has a positive linear association between the two variables.
+
+```{r}
+dta_new <- filter(dta, Aggression == "0.05" | Aggression == "-0.31")
+```
+
+
+To ensure that the code above properly filtered the data, a simple table is coded to count the number of students in each aggression level.
+
+
+```{r}
+agg_count1 <- dta_new %>% group_by(UK_US) %>% count()
+agg_count1
+```
+
+
+```{r}
+ggplot(CAclean, aes(x = UK.US, y = Videos, color=factor(Aggression))) +
+  geom_point()
+
+```
+
+The box plot used jitter points to show the relationship between aggression and videos.Higher Video Viewing caused higher aggression levels in UK.
+
+
+
+Statistical Analysis
+
+Determine if there is a difference in means between the United Kingdom and the united States. 
+
+```{r}
+CAclean %>%
+group_by(UK.US) %>%
+  summarise(n_children = n(),
+            mean_aggression = mean(Aggression),
+            std_error = sd(Aggression) / sqrt(n_children))
+
+```
+
+
+
+
+There is definitely a difference in means, as shown in the tables. The standard error values are very close to being equivalent. The mean aggression for the United Kingdom is higher than the mean for the United States.
+
+```{r}
+summary(CAclean)
+
+```
+
+When using the summary function of all the variables in the dataset, it gives an overall of each variable. It has shown that the highest level of aggression with a score of 1.18 was in the United States, and the lowest level of aggression with a score of -1.3 was in the United Kingdom. The highest and lowest levels can be described as the minimum and the maximum. The minimum of the variable nutrition is -1.28, and the maximum is 1.22. The minimum of the variable parental approach is -4.46, and the maximum is 3.99. The minimum of the variable siblings is -1.43, and the maximum is 1.1. The minimum of the variable electronic games is -1.15, and the maximum is 1.62. The minimum of the variable video viewing is -1.46, and the maximum is 0.48. Based on each variable separately, the minimum of each variable was found in the United Kingdom except for the variable parental approach. Based on each variable separately, the maximum of the variables nutrition, parental approach, and siblings were found in the United Kingdom, while the maximum of electronic games and video viewing were found in the United States. These levels of maximum and minimum has been used in proving or disapproving the hypothesis. 
+
+
+
+
+The Results
+After the variables in the model have been correlated, it is shown that each variable perfectly correlates to itself for each gives a value of 1.  In making a linear model of the variables, it shows how each variable is correlated to the other variables.
+
+
+```{r}
+agg_corr <- cor(childaggression_clean)
+cat("Correlation Matrix for Aggression Data\n")
+agg_corr
+corrplot(agg_corr, method = "circle", type = "upper")
+corrplot(agg_corr, method = "shade", type = "upper", diag = FALSE)
+```
+
+
+The linear model shows that once a prediction model would be created with the means of the prediction column it would practically predict the agggression level with all of the variables except nutrition. The slope of the linear model would be a negative slope along the line of each variable being perfectly correlated to itself. 
+
+
+
+Machine Learning - Linear Regression
+
+For the machine learning problem a linear regression model was used. The model represents a supervised machine learning problem. This is a supervised machine learning problem because there are input variables and output variables. There is a multi-variable input for the x- values, and there is one output variable. The input variables are the independent variables used to determine the output variable which is the dependent variable. The dependent variable is Aggression. This is a regression type of supervised machine learning problem. It is a regression type of machine learning problem because the output variable provides a real numerical value. 
+
+```{r}
+validation_index <- createDataPartition(CAclean$Aggression, p=0.80, list=FALSE)
+validation_agg <- CAclean[-validation_index,]
+# use the remaining 80% of data to training and testing the models
+CAclean <- CAclean[validation_index,]
+```
+The dataset has been spereated into two seperate datsets, one with eighty percent and the other with twenty percent of the cleaned data. The first dataset is called the training data set which includes eighty percent of the data. The second data set is called the testing dataset which includes twenty percent of the dataset.
+
+```{r}
+model4 = lm(Aggression ~ Electronic_games + Siblings + Nutrition + Parental_Approach, data = CAclean)
+summary(model4)
+
+summary(model4)
+
+```
+
+The model shows that the electronic games, siblings, nutrition, and parental approach, are significant varibles to predict the aggression, becase the P vale is between 0 and 0.001. The Overval P value for the model is overal signifant. A lower P value provides a better model.The mutiple R sqaure is 0.07909. This varible show how close the independent varibles are close to the line of best fit. The closer R sqaured is to 1 the better the model is therefore this model can be better.The Root mean squared error is an average of the variance. This number is based on the units of your independent variable when deciding its fate. It can range from 0 to any number. The smaller the number the better the model. My RMSE is 4.379 this this low compared to the average number of total shipped, there for this model is useful in predicitng aggression but can be better.
+
+Most importantly, the question when creating a model after exploring various feature combinations is the accuracy of the model. To measure the accuracy of the model, we use cross validation.The training data set get split into 5 parts randomly. The code below iterate 1 to 5 times.
+
+```{r}
+control <- trainControl(method="cv", number=5)
+set.seed(7)
+fit <- train(Aggression ~ Electronic_games + Siblings + Nutrition + Parental_Approach, data = CAclean, method="lm", metric="RMSE", trControl=control)
+print(fit)
+
+```
+
+In this model the RMSE and the Rsquared are nearly the same as those in model4 to check addtional accracy we will run the model on validation set.
+ 
+```{r}
+model5 = lm(Aggression ~ Electronic_games + Siblings + Nutrition + Parental_Approach, data = validation_agg)
+summary(model5)
+
+summary(model5)
+
+```
+ 
+In this model the rsquared variable is higher than in the validation index set of the eighty percent.
+The mutiple R sqaure is 0.09693. This varible show how close the independent varibles are close to the line of best fit. 
+
+```{r}
+control <- trainControl(method="cv", number=5)
+set.seed(7)
+fit <- train(Aggression ~ Electronic_games + Siblings + Nutrition + Parental_Approach, data = validation_agg, method="lm", metric="RMSE", trControl=control)
+print(fit)
+
+```
+
+In this model the RMSE and the Rsquared are nearly the same as those in model5 to check addtional accracy we will run the model on validation set.
+ 
+
+
+
+Machine Learning Model
+$$y=.01x_1-5.833x_2-0.00000000000003823x_3+0.8333x_4$$
+
+
+Recommendations
+1. Try to use another intervention
+2. Collect additional data on the children that can be used as possible variables that influence behavior
+3. Higher me fulltime
+
+
+Future Work
+
+In enhancing the data more variables could be used to compare the aggression levels of children in each country. Other factors that could be used could be used are school environment and neighborhood environment. Also more countries around the world, at least one country one ach continent can be used to compare the data of children of each country. More in depth, the factors can be compared in countries that are in poverty in compared to more developed countries.
+
+Acknowledgements
+
+I would like to acknowledge my Springboard mentor, Mr. Blaine Bateman, and my faculty mentor, Dr. Torina Lewis for their expressed support. This research opportunity was sponsored by the National Science Foundation, award number 1700408.
